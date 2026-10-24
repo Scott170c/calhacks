@@ -240,3 +240,21 @@ datasets/
 
 # Operating system
 .DS_Store
+
+# SmartBag
+node_modules/
+.gradle/
+local.properties
+*.apk
+*.aab
+.DS_Store
+xcuserdata/
+DerivedData/
+.swiftpm/
+install/
+log/
+*.engine
+.env
+# the website ships its download files
+!website/downloads/
+!website/downloads/*.apk
