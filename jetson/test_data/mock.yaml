@@ -1,0 +1,51 @@
+# SmartBag Jetson configuration. Coordinates are normalised (0..1, origin top-left of each camera image).
+vision_node:
+  ros__parameters:
+    cameras: ["cam0", "cam1"]
+    width: 1280
+    height: 720
+    fps: 30
+    rate_hz: 15.0               # inference loop ceiling (both cameras per cycle)
+    debug_image_hz: 0.0         # annotated JPEGs on /smartbag/<cam>/debug/compressed (0 = off)
+    detector:
+      backend: "mock"
+      mock_script: "/workspace/smartbag/jetson/test_data/mock_trip.json"
+      model: "/opt/smartbag/models/yolov8n.engine"   # TensorRT engine built on THIS Jetson (scripts/export_engine.sh)
+      imgsz: 416
+      conf: 0.30
+      device: "0"
+      half: true
+    labels: [""]                # restrict to these classes ("" = every class in sku_map is used downstream)
+    min_conf: 0.35
+    min_area: 0.002             # ignore boxes smaller than 0.2% of the image
+    confirm_frames: 2           # frames an item must stay on the new side of the rim
+    drop_motion: 0.08           # movement that counts a fast drop seen only inside the bag
+    cam0:
+      source: "none"           # csi:N (ribbon camera) | usb:N | /dev/videoN | file:/path.mp4
+      flip: 0                   # CSI flip-method (0 none, 2 rotate 180)
+      # bag interior as seen by this camera: everything below 40% of the image height
+      inside_zone: [0.0, 0.40, 1.0, 0.40, 1.0, 1.0, 0.0, 1.0]
+    cam1:
+      source: "none"
+      flip: 0
+      inside_zone: [0.0, 0.40, 1.0, 0.40, 1.0, 1.0, 0.0, 1.0]
+
+fusion_node:
+  ros__parameters:
+    window_s: 1.2               # both cameras seeing the same crossing within this window = one item
+    hold_s: 0.6                 # how long to wait for the second camera before deciding alone
+    single_cam_min_conf: 0.55   # one-camera events need at least this confidence
+    # detector class -> store SKU. Demo mapping for the stock COCO model; replace with your trained classes.
+    sku_map:
+      - "banana=1001"
+      - "apple=1003"
+      - "broccoli=1004"
+      - "sandwich=1008"
+      - "bottle=1010"
+
+ble_bridge_node:
+  ros__parameters:
+    transport: "serial"         # serial: USB to the SmartBag ESP32 | bluez: Jetson BT adapter | stdout
+    serial_port: "/dev/ttyUSB0"
+    baud: 115200
+    device_name: "SmartBag-01"  # bluez only
