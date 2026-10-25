@@ -83,9 +83,9 @@ The iPhone app is paused: there is no App Store or TestFlight build, so the page
 The page describes them: setup line under Get the app, FAQ "Do I need an account?", "How do I connect my bag?", "What if the app gets an item wrong?" (change quantity / pick the product, Android 3.4+), "Can I set a budget?" (Android 3.4+), "Will I be charged?" (Wallet, simulated payments, only type/last four/expiry kept) and the location/privacy answer (trips and approximate location are public test data; email, password and saved cards private). Push notifications are still being built: don't mention receipt notifications until they ship.
 
 ## Android download
-`downloads/bag-it.apk` is Android 3.5 (versionCode 8, minSdk 26 = Android 8.0, 7,437,659 bytes = 7.4 MB), a copy of `/cloudspace/smartbag/SmartBag-3.5.apk`.
+`downloads/bag-it.apk` is Android 3.6 (versionCode 10, minSdk 26 = Android 8.0, 7,440,243 bytes = 7.4 MB), a copy of `/cloudspace/smartbag/SmartBag-3.6.apk`.
 
-**Swapping in a new APK (e.g. 3.6) is one file + one line:**
-1. `cp /cloudspace/smartbag/SmartBag-3.6.apk website/downloads/bag-it.apk` (same name, so the QR code and links stay valid).
-2. In index.html, edit the version line in the Android panel: `<p class="meta">Version 3.6 · Android 8.0 or newer · X.X MB</p>` (size = bytes / 1,000,000, one decimal; check minSdk with `aapt dump badging`).
+**Swapping in a new APK is one file + one line:**
+1. `cp /cloudspace/smartbag/SmartBag-<version>.apk website/downloads/bag-it.apk` (same name, so the QR code and links stay valid).
+2. In index.html, edit the version line in the Android panel: `<p class="meta">Version <version> · Android 8.0 or newer · X.X MB</p>` (size = bytes / 1,000,000, one decimal; check minSdk with `aapt dump badging`).
 3. Commit and push the `website` branch; Netlify redeploys. Update this paragraph.
