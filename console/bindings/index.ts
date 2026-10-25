@@ -51,23 +51,55 @@ import ResetDemoReducer from "./reset_demo_reducer";
 import RevokeStaffInviteReducer from "./revoke_staff_invite_reducer";
 import RotateInviteReducer from "./rotate_invite_reducer";
 import SeedLoadTestReducer from "./seed_load_test_reducer";
+import SeedProductLabelsReducer from "./seed_product_labels_reducer";
+import SetAiConfigReducer from "./set_ai_config_reducer";
 import SetAuthClientsReducer from "./set_auth_clients_reducer";
 import SetBagReducer from "./set_bag_reducer";
 import SetDisplayNameReducer from "./set_display_name_reducer";
 import SetPaymentReducer from "./set_payment_reducer";
+import SetProductLabelReducer from "./set_product_label_reducer";
+import SetPushConfigReducer from "./set_push_config_reducer";
 import SignInReducer from "./sign_in_reducer";
 import UpdateLocationReducer from "./update_location_reducer";
 import UpsertProductReducer from "./upsert_product_reducer";
 import UpsertStoreReducer from "./upsert_store_reducer";
 
 // Import all procedure arg schemas
+import * as AccountDeleteProcedure from "./account_delete_procedure";
+import * as AccountSetNameProcedure from "./account_set_name_procedure";
+import * as AccountSignInProcedure from "./account_sign_in_procedure";
+import * as AccountSignOutProcedure from "./account_sign_out_procedure";
+import * as AccountSignUpProcedure from "./account_sign_up_procedure";
+import * as AccountStateProcedure from "./account_state_procedure";
+import * as BagPairProcedure from "./bag_pair_procedure";
+import * as BagRenameProcedure from "./bag_rename_procedure";
+import * as BagUnpairProcedure from "./bag_unpair_procedure";
+import * as CardAddProcedure from "./card_add_procedure";
+import * as CardRemoveProcedure from "./card_remove_procedure";
+import * as CardSetDefaultProcedure from "./card_set_default_procedure";
+import * as PushRegisterProcedure from "./push_register_procedure";
+import * as PushSetPrefsProcedure from "./push_set_prefs_procedure";
+import * as PushStatusProcedure from "./push_status_procedure";
+import * as PushTestProcedure from "./push_test_procedure";
+import * as PushUnregisterProcedure from "./push_unregister_procedure";
 import * as ServerTimeProcedure from "./server_time_procedure";
 import * as ShopBagLineProcedure from "./shop_bag_line_procedure";
+import * as ShopHwEventProcedure from "./shop_hw_event_procedure";
 import * as ShopLocateProcedure from "./shop_locate_procedure";
+import * as ShopNearbyStoresProcedure from "./shop_nearby_stores_procedure";
+import * as ShopRecommendProcedure from "./shop_recommend_procedure";
+import * as ShopRelabelProcedure from "./shop_relabel_procedure";
 import * as ShopRemoveProcedure from "./shop_remove_procedure";
+import * as ShopSessionRekeyProcedure from "./shop_session_rekey_procedure";
+import * as ShopSessionStateProcedure from "./shop_session_state_procedure";
 import * as ShopSetBagProcedure from "./shop_set_bag_procedure";
+import * as ShopSetBudgetProcedure from "./shop_set_budget_procedure";
 import * as ShopSetPaymentProcedure from "./shop_set_payment_procedure";
+import * as ShopSetQtyProcedure from "./shop_set_qty_procedure";
 import * as ShopStateProcedure from "./shop_state_procedure";
+import * as ShopStoreProductsProcedure from "./shop_store_products_procedure";
+import * as ShopSummaryProcedure from "./shop_summary_procedure";
+import * as ShopTripsProcedure from "./shop_trips_procedure";
 
 // Import all table schema definitions
 import BagEventRow from "./bag_event_table";
@@ -83,6 +115,7 @@ import MyStoresRow from "./my_stores_table";
 import MyTeamRow from "./my_team_table";
 import OrderLineRow from "./order_line_table";
 import ProductRow from "./product_table";
+import ProductLabelRow from "./product_label_table";
 import ProfileRow from "./profile_table";
 import ShopOrderRow from "./shop_order_table";
 import ShopperRow from "./shopper_table";
@@ -157,6 +190,21 @@ const tablesSchema = __schema({
       { name: 'product_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, ProductRow),
+  productLabel: __table({
+    name: 'product_label',
+    indexes: [
+      { accessor: 'id', name: 'product_label_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_store_label', name: 'product_label_store_id_label_idx_btree', algorithm: 'btree', columns: [
+        'storeId',
+        'label',
+      ] },
+    ],
+    constraints: [
+      { name: 'product_label_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ProductLabelRow),
   profile: __table({
     name: 'profile',
     indexes: [
@@ -306,10 +354,14 @@ const reducersSchema = __reducers(
   __reducerSchema("revoke_staff_invite", RevokeStaffInviteReducer),
   __reducerSchema("rotate_invite", RotateInviteReducer),
   __reducerSchema("seed_load_test", SeedLoadTestReducer),
+  __reducerSchema("seed_product_labels", SeedProductLabelsReducer),
+  __reducerSchema("set_ai_config", SetAiConfigReducer),
   __reducerSchema("set_auth_clients", SetAuthClientsReducer),
   __reducerSchema("set_bag", SetBagReducer),
   __reducerSchema("set_display_name", SetDisplayNameReducer),
   __reducerSchema("set_payment", SetPaymentReducer),
+  __reducerSchema("set_product_label", SetProductLabelReducer),
+  __reducerSchema("set_push_config", SetPushConfigReducer),
   __reducerSchema("sign_in", SignInReducer),
   __reducerSchema("update_location", UpdateLocationReducer),
   __reducerSchema("upsert_product", UpsertProductReducer),
@@ -318,13 +370,41 @@ const reducersSchema = __reducers(
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
+  __procedureSchema("account_delete", AccountDeleteProcedure.params, AccountDeleteProcedure.returnType),
+  __procedureSchema("account_set_name", AccountSetNameProcedure.params, AccountSetNameProcedure.returnType),
+  __procedureSchema("account_sign_in", AccountSignInProcedure.params, AccountSignInProcedure.returnType),
+  __procedureSchema("account_sign_out", AccountSignOutProcedure.params, AccountSignOutProcedure.returnType),
+  __procedureSchema("account_sign_up", AccountSignUpProcedure.params, AccountSignUpProcedure.returnType),
+  __procedureSchema("account_state", AccountStateProcedure.params, AccountStateProcedure.returnType),
+  __procedureSchema("bag_pair", BagPairProcedure.params, BagPairProcedure.returnType),
+  __procedureSchema("bag_rename", BagRenameProcedure.params, BagRenameProcedure.returnType),
+  __procedureSchema("bag_unpair", BagUnpairProcedure.params, BagUnpairProcedure.returnType),
+  __procedureSchema("card_add", CardAddProcedure.params, CardAddProcedure.returnType),
+  __procedureSchema("card_remove", CardRemoveProcedure.params, CardRemoveProcedure.returnType),
+  __procedureSchema("card_set_default", CardSetDefaultProcedure.params, CardSetDefaultProcedure.returnType),
+  __procedureSchema("push_register", PushRegisterProcedure.params, PushRegisterProcedure.returnType),
+  __procedureSchema("push_set_prefs", PushSetPrefsProcedure.params, PushSetPrefsProcedure.returnType),
+  __procedureSchema("push_status", PushStatusProcedure.params, PushStatusProcedure.returnType),
+  __procedureSchema("push_test", PushTestProcedure.params, PushTestProcedure.returnType),
+  __procedureSchema("push_unregister", PushUnregisterProcedure.params, PushUnregisterProcedure.returnType),
   __procedureSchema("server_time", ServerTimeProcedure.params, ServerTimeProcedure.returnType),
   __procedureSchema("shop_bag_line", ShopBagLineProcedure.params, ShopBagLineProcedure.returnType),
+  __procedureSchema("shop_hw_event", ShopHwEventProcedure.params, ShopHwEventProcedure.returnType),
   __procedureSchema("shop_locate", ShopLocateProcedure.params, ShopLocateProcedure.returnType),
+  __procedureSchema("shop_nearby_stores", ShopNearbyStoresProcedure.params, ShopNearbyStoresProcedure.returnType),
+  __procedureSchema("shop_recommend", ShopRecommendProcedure.params, ShopRecommendProcedure.returnType),
+  __procedureSchema("shop_relabel", ShopRelabelProcedure.params, ShopRelabelProcedure.returnType),
   __procedureSchema("shop_remove", ShopRemoveProcedure.params, ShopRemoveProcedure.returnType),
+  __procedureSchema("shop_session_rekey", ShopSessionRekeyProcedure.params, ShopSessionRekeyProcedure.returnType),
+  __procedureSchema("shop_session_state", ShopSessionStateProcedure.params, ShopSessionStateProcedure.returnType),
   __procedureSchema("shop_set_bag", ShopSetBagProcedure.params, ShopSetBagProcedure.returnType),
+  __procedureSchema("shop_set_budget", ShopSetBudgetProcedure.params, ShopSetBudgetProcedure.returnType),
   __procedureSchema("shop_set_payment", ShopSetPaymentProcedure.params, ShopSetPaymentProcedure.returnType),
+  __procedureSchema("shop_set_qty", ShopSetQtyProcedure.params, ShopSetQtyProcedure.returnType),
   __procedureSchema("shop_state", ShopStateProcedure.params, ShopStateProcedure.returnType),
+  __procedureSchema("shop_store_products", ShopStoreProductsProcedure.params, ShopStoreProductsProcedure.returnType),
+  __procedureSchema("shop_summary", ShopSummaryProcedure.params, ShopSummaryProcedure.returnType),
+  __procedureSchema("shop_trips", ShopTripsProcedure.params, ShopTripsProcedure.returnType),
 );
 
 /** The remote SpacetimeDB module schema, both runtime and type information. */

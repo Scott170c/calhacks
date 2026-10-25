@@ -21,6 +21,20 @@ export const Account = __t.object("Account", {
 });
 export type Account = __Infer<typeof Account>;
 
+export const AccountState = __t.object("AccountState", {
+  signedIn: __t.bool(),
+  name: __t.string(),
+  email: __t.string(),
+  get cards() {
+    return __t.array(CardInfo);
+  },
+  get bags() {
+    return __t.array(BagInfo);
+  },
+  payment: __t.string(),
+});
+export type AccountState = __Infer<typeof AccountState>;
+
 export const AccountSummary = __t.object("AccountSummary", {
   key: __t.string(),
   signedIn: __t.bool(),
@@ -62,6 +76,25 @@ export const BagEvent = __t.object("BagEvent", {
 });
 export type BagEvent = __Infer<typeof BagEvent>;
 
+export const BagInfo = __t.object("BagInfo", {
+  id: __t.u64(),
+  bagId: __t.string(),
+  name: __t.string(),
+  pairedMicros: __t.i64(),
+});
+export type BagInfo = __Infer<typeof BagInfo>;
+
+export const CardInfo = __t.object("CardInfo", {
+  id: __t.u64(),
+  brand: __t.string(),
+  last4: __t.string(),
+  expMonth: __t.u32(),
+  expYear: __t.u32(),
+  nickname: __t.string(),
+  isDefault: __t.bool(),
+});
+export type CardInfo = __Infer<typeof CardInfo>;
+
 export const CartItem = __t.object("CartItem", {
   id: __t.u64(),
   shopper: __t.identity(),
@@ -83,6 +116,13 @@ export const CartLine = __t.object("CartLine", {
   addedMicros: __t.i64(),
 });
 export type CartLine = __Infer<typeof CartLine>;
+
+export const CartSession = __t.object("CartSession", {
+  identity: __t.identity(),
+  accountId: __t.u64(),
+  startedAt: __t.timestamp(),
+});
+export type CartSession = __Infer<typeof CartSession>;
 
 export const CartState = __t.object("CartState", {
   storeId: __t.string(),
@@ -116,6 +156,21 @@ export const Config = __t.object("Config", {
   value: __t.string(),
 });
 export type Config = __Infer<typeof Config>;
+
+export const HwEventResult = __t.object("HwEventResult", {
+  status: __t.string(),
+  message: __t.string(),
+  get state() {
+    return SessionState;
+  },
+});
+export type HwEventResult = __Infer<typeof HwEventResult>;
+
+export const HwEventSeen = __t.object("HwEventSeen", {
+  key: __t.string(),
+  sessionId: __t.u64(),
+});
+export type HwEventSeen = __Infer<typeof HwEventSeen>;
 
 export const InviteRow = __t.object("InviteRow", {
   id: __t.u64(),
@@ -158,6 +213,17 @@ export type MyStores = __Infer<typeof MyStores>;
 export const MyTeam = __t.object("MyTeam", {});
 export type MyTeam = __Infer<typeof MyTeam>;
 
+export const NearbyStore = __t.object("NearbyStore", {
+  id: __t.string(),
+  name: __t.string(),
+  address: __t.string(),
+  lat: __t.f64(),
+  lng: __t.f64(),
+  radiusM: __t.u32(),
+  distanceM: __t.u32(),
+});
+export type NearbyStore = __Infer<typeof NearbyStore>;
+
 export const Operator = __t.object("Operator", {
   identity: __t.identity(),
 });
@@ -174,6 +240,36 @@ export const OrderLine = __t.object("OrderLine", {
   qty: __t.u32(),
 });
 export type OrderLine = __Infer<typeof OrderLine>;
+
+export const OrderOwner = __t.object("OrderOwner", {
+  orderId: __t.u64(),
+  accountId: __t.u64(),
+  identity: __t.identity(),
+  at: __t.timestamp(),
+});
+export type OrderOwner = __Infer<typeof OrderOwner>;
+
+export const PairedBag = __t.object("PairedBag", {
+  id: __t.u64(),
+  accountId: __t.u64(),
+  bagId: __t.string(),
+  name: __t.string(),
+  pairedAt: __t.timestamp(),
+});
+export type PairedBag = __Infer<typeof PairedBag>;
+
+export const PaymentCard = __t.object("PaymentCard", {
+  id: __t.u64(),
+  accountId: __t.u64(),
+  brand: __t.string(),
+  last4: __t.string(),
+  expMonth: __t.u32(),
+  expYear: __t.u32(),
+  nickname: __t.string(),
+  isDefault: __t.bool(),
+  addedAt: __t.timestamp(),
+});
+export type PaymentCard = __Infer<typeof PaymentCard>;
 
 export const PersonRow = __t.object("PersonRow", {
   key: __t.string(),
@@ -204,11 +300,36 @@ export const Product = __t.object("Product", {
 });
 export type Product = __Infer<typeof Product>;
 
+export const ProductLabel = __t.object("ProductLabel", {
+  id: __t.u64(),
+  storeId: __t.string(),
+  label: __t.string(),
+  sku: __t.string(),
+});
+export type ProductLabel = __Infer<typeof ProductLabel>;
+
 export const Profile = __t.object("Profile", {
   identity: __t.identity(),
   name: __t.string(),
 });
 export type Profile = __Infer<typeof Profile>;
+
+export const PushDevice = __t.object("PushDevice", {
+  identity: __t.identity(),
+  accountId: __t.u64(),
+  platform: __t.string(),
+  token: __t.string(),
+  prefs: __t.string(),
+  updatedAt: __t.timestamp(),
+});
+export type PushDevice = __Infer<typeof PushDevice>;
+
+export const PushState = __t.object("PushState", {
+  serverPush: __t.bool(),
+  registered: __t.bool(),
+  prefs: __t.string(),
+});
+export type PushState = __Infer<typeof PushState>;
 
 export const Receipt = __t.object("Receipt", {
   orderId: __t.u64(),
@@ -234,6 +355,38 @@ export const ReceiptLine = __t.object("ReceiptLine", {
 });
 export type ReceiptLine = __Infer<typeof ReceiptLine>;
 
+export const Recommendation = __t.object("Recommendation", {
+  sku: __t.string(),
+  name: __t.string(),
+  priceCents: __t.u32(),
+  reason: __t.string(),
+});
+export type Recommendation = __Infer<typeof Recommendation>;
+
+export const Recommendations = __t.object("Recommendations", {
+  source: __t.string(),
+  note: __t.string(),
+  get items() {
+    return __t.array(Recommendation);
+  },
+});
+export type Recommendations = __Infer<typeof Recommendations>;
+
+export const SessionState = __t.object("SessionState", {
+  sessionId: __t.string(),
+  storeId: __t.string(),
+  storeName: __t.string(),
+  active: __t.bool(),
+  lastSeq: __t.u64(),
+  budgetCents: __t.u32(),
+  spentCents: __t.u32(),
+  remainingCents: __t.i64(),
+  get cart() {
+    return CartState;
+  },
+});
+export type SessionState = __Infer<typeof SessionState>;
+
 export const ShopOrder = __t.object("ShopOrder", {
   id: __t.u64(),
   code: __t.string(),
@@ -252,6 +405,21 @@ export const ShopOrder = __t.object("ShopOrder", {
 });
 export type ShopOrder = __Infer<typeof ShopOrder>;
 
+export const ShopSession = __t.object("ShopSession", {
+  id: __t.u64(),
+  sid: __t.string(),
+  identity: __t.identity(),
+  storeId: __t.string(),
+  status: __t.string(),
+  startedAt: __t.timestamp(),
+  endedMicros: __t.i64(),
+  orderId: __t.u64(),
+  lastSeq: __t.u64(),
+  eventCount: __t.u32(),
+  budgetCents: __t.u32(),
+});
+export type ShopSession = __Infer<typeof ShopSession>;
+
 export const Shopper = __t.object("Shopper", {
   identity: __t.identity(),
   storeId: __t.string(),
@@ -268,6 +436,33 @@ export const Shopper = __t.object("Shopper", {
   updatedAt: __t.timestamp(),
 });
 export type Shopper = __Infer<typeof Shopper>;
+
+export const ShopperAccount = __t.object("ShopperAccount", {
+  id: __t.u64(),
+  email: __t.string(),
+  name: __t.string(),
+  passHash: __t.string(),
+  salt: __t.string(),
+  iterations: __t.u32(),
+  failedLogins: __t.u32(),
+  lockedUntilMicros: __t.i64(),
+  createdAt: __t.timestamp(),
+});
+export type ShopperAccount = __Infer<typeof ShopperAccount>;
+
+export const ShopperBudget = __t.object("ShopperBudget", {
+  key: __t.string(),
+  cents: __t.u32(),
+  updatedAt: __t.timestamp(),
+});
+export type ShopperBudget = __Infer<typeof ShopperBudget>;
+
+export const ShopperLogin = __t.object("ShopperLogin", {
+  identity: __t.identity(),
+  accountId: __t.u64(),
+  signedInAt: __t.timestamp(),
+});
+export type ShopperLogin = __Infer<typeof ShopperLogin>;
 
 export const StaffEmailInvite = __t.object("StaffEmailInvite", {
   id: __t.u64(),
@@ -327,4 +522,18 @@ export const TeamRow = __t.object("TeamRow", {
   isYou: __t.bool(),
 });
 export type TeamRow = __Infer<typeof TeamRow>;
+
+export const TripSummary = __t.object("TripSummary", {
+  get receipt() {
+    return Receipt;
+  },
+  sessionId: __t.string(),
+  startedMicros: __t.i64(),
+  endedMicros: __t.i64(),
+  eventCount: __t.u32(),
+  budgetCents: __t.u32(),
+  underBudgetCents: __t.i64(),
+  text: __t.string(),
+});
+export type TripSummary = __Infer<typeof TripSummary>;
 

@@ -1492,7 +1492,7 @@ function UserDiv() {
         ), true)}
         {Section('Bag hardware', 'BLE Nordic UART Service', (
           <div className={box + ' overflow-hidden'}>
-            <div className="px-4 pt-4 text-sm muted">The bag notifies newline-terminated text on TX. The phone forwards each line to the database, which parses it and answers the bag on RX with <span className="mono ink whitespace-nowrap">OK +1005 4.69</span>, <span className="mono ink whitespace-nowrap">ERR 9999 unknown</span>, or <span className="mono ink whitespace-nowrap">PAID 7KQ2XD</span> once the shopper walks out.</div>
+            <div className="px-4 pt-4 text-sm muted">The bag notifies newline-terminated text on TX. The phone forwards each line to the database, which parses it and answers the bag on RX with <span className="mono ink whitespace-nowrap">OK +1005 4.69</span>, <span className="mono ink whitespace-nowrap">ERR 9999 unknown</span>, or <span className="mono ink whitespace-nowrap">PAID 7KQ2XD</span> once the shopper walks out and is charged (<span className="mono ink whitespace-nowrap">DUE 7KQ2XD</span> when no card was on file, so nothing was charged).</div>
             <div className="mt-3 text-xs">
               {proto.map(([a, b]) => (
                 <div key={a} className="px-4 py-2 flex items-baseline gap-3 border-t hl"><span className="mono shrink-0 ink">{a}</span><span className="ml-auto text-right muted">{b}</span></div>
