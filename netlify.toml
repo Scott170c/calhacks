@@ -1,0 +1,5 @@
+# Netlify config for bagitwith.us (repo Scott170c/calhacks, branch "website").
+# Static site: no build command. Netlify publishes the website/ folder as is.
+# Headers: website/_headers. Hidden internal files: website/_redirects.
+[build]
+  publish = "website"

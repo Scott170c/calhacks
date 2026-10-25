@@ -1,7 +1,9 @@
-/DESIGN-SYSTEM.md  /404.html  404
-/README.md  /404.html  404
-/media/README.md  /404.html  404
-/brand/brand.md  /404.html  404
-/brand/explorations/*  /404.html  404
-/.gitignore  /404.html  404
-/tools/*  /404.html  404
+# Netlify: hide internal docs and tools if the whole folder is published.
+# The trailing ! forces the rule even though the file exists (Netlify skips unforced rules for existing files).
+/DESIGN-SYSTEM.md       /404.html  404!
+/README.md              /404.html  404!
+/media/README.md        /404.html  404!
+/brand/brand.md         /404.html  404!
+/brand/explorations/*   /404.html  404!
+/.gitignore             /404.html  404!
+/tools/*                /404.html  404!
