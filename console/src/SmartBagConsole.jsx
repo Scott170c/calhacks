@@ -1247,9 +1247,9 @@ function UserDiv() {
                   onBlur={(e) => { const v = e.target.value.trim(); if (v !== s.address) saveStore('address', s, { address: v }); }}
                   onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') { e.currentTarget.value = s.address; e.currentTarget.blur(); } }} />}
               </label>
-              <label className="block"><span className={lbl}>Detection radius, meters (10 to 400)</span>
-                {dis ? <div className="text-sm ink py-2 tnum">{s.radiusM} m</div> : <input key={'r' + s.id} ref={syncRef(s.radiusM)} type="number" min="10" max="400" step="5" defaultValue={s.radiusM} className="field tnum"
-                  onBlur={(e) => { const v = parseInt(e.target.value, 10); if (!(v >= 10 && v <= 400)) { e.target.value = s.radiusM; setFieldMsg((m) => ({ ...m, radius: 'Not saved: use 10 to 400 m' })); return; } if (v !== s.radiusM) saveStore('radius', s, { radiusM: v }); }}
+              <label className="block"><span className={lbl}>Detection radius, meters (10 to 500)</span>
+                {dis ? <div className="text-sm ink py-2 tnum">{s.radiusM} m</div> : <input key={'r' + s.id} ref={syncRef(s.radiusM)} type="number" min="10" max="500" step="5" defaultValue={s.radiusM} className="field tnum"
+                  onBlur={(e) => { const v = parseInt(e.target.value, 10); if (!(v >= 10 && v <= 500)) { e.target.value = s.radiusM; setFieldMsg((m) => ({ ...m, radius: 'Not saved: use 10 to 500 m' })); return; } if (v !== s.radiusM) saveStore('radius', s, { radiusM: v }); }}
                   onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} />}
                 <span className="block mt-1 text-xs faint">Phones inside the circle are placed in the store. Two accurate fixes beyond radius + 40 m count as walking out.</span>
               </label>
