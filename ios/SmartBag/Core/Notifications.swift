@@ -30,7 +30,7 @@ public enum NotificationCopy {
                                     body: "\(n)\(card). Exit code \(r.code).", info: info)
         }
         return NotificationText(kind: .trips, id: "trip-\(r.orderId)", title: "Payment due at \(r.storeName)",
-                                body: "\(money(r.totalCents)) for \(n). No card was on file: show exit code \(r.code) to staff to pay.", info: info)
+                                body: "\(money(r.totalCents)) for \(n). No card was on file, so nothing was charged. Show exit code \(r.code) to store staff.", info: info)
     }
 
     /// Once per visit: "You're at Bayside Grocer".

@@ -20,7 +20,7 @@ struct WelcomeScreen: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
                         .padding(.top, Space.xxl)
-                    Text("No lines. No scanning.")
+                    Text("Drop groceries in your bag and just walk out. Your receipt lands here as you leave.")
                         .font(TypeScale.body).foregroundColor(Theme.muted)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, Space.m)

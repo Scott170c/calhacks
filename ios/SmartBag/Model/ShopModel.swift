@@ -281,7 +281,7 @@ final class ShopModel: ObservableObject {
         if let r, let seen, rid > seen {
             paid = r
             // The bag's light says "paid" on PAID; a payment-due trip was not paid, so the bag isn't told it was.
-            if r.isPaid { link.send("PAID \(r.code)") }
+            link.send(r.isPaid ? "PAID \(r.code)" : "DUE \(r.code)")   // DUE: three slow blinks (bag firmware v3); older bags ignore it
             // On screen the receipt cover shows it; otherwise a notification (id trip-<orderId>: never twice).
             if !foregroundActive { notify(NotificationCopy.receipt(r)) }
             // The success/warning haptic plays in ReceiptScreen, at the moment the slot lights.

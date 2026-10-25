@@ -73,7 +73,7 @@ struct TripsView: View {
             Text(money(r.totalCents)).font(TypeScale.bodyMono).foregroundColor(Theme.ink)
         }
         .accessibilityLabel("\(r.storeName), \(clockTime(r.paidAt)), \(items(r.itemCount)), \(money(r.totalCents))\(r.isPaid ? "" : ", payment due")")
-        .accessibilityHint("Shows the receipt and exit pass.")
+        .accessibilityHint("Shows the receipt and exit code.")
     }
 
     struct DayGroup { let label: String; let trips: [Receipt] }

@@ -112,6 +112,7 @@ func check(_ ok: Bool, _ what: String) { print((ok ? "  ok   " : "  FAIL ") + wh
     if let due = m.paid, !due.isPaid {
         check(true, "background exit check: two fixes -> walk-out, payment due \(money(due.totalCents))")
         check(!m.link.sent.contains("PAID \(due.code)"), "no PAID to the bag for a payment-due trip")
+        check(m.link.sent.contains("DUE \(due.code)"), "DUE \(due.code) sent to the bag for a payment-due trip")
         check(Notify.shared.posted.last?.title == "Payment due at Bayside Grocer", "payment-due notification (\(Notify.shared.posted.last?.body ?? "-"))")
         m.finishReceipt(); m.foreground(); await settle()
         check(Notify.shared.posted.filter { $0.id == "trip-\(due.orderId)" }.count == 1 && m.paid == nil, "no duplicate receipt after the next refresh")

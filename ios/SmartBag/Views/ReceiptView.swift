@@ -6,7 +6,7 @@ import UIKit
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
-/// Exit pass QR, "SMARTBAG-EXIT:<code>:<orderId>:<totalCents>" (same payload as Android), ink on white.
+/// Exit code QR, "SMARTBAG-EXIT:<code>:<orderId>:<totalCents>" (same payload as Android), ink on white.
 enum QRCode {
     static func image(_ text: String) -> UIImage? {
         let qr = CIFilter.qrCodeGenerator()
@@ -60,7 +60,7 @@ struct ReceiptScreen: View {
                     Text(when(r.paidAt) + (r.isPaid && !r.payment.isEmpty ? " · \(unbreakable(r.payment))" : ""))
                         .font(TypeScale.caption).foregroundColor(Theme.muted).multilineTextAlignment(.center)
                     if due {
-                        Text("No card on file, so nothing was charged.")
+                        Text("No card was on file, so nothing was charged. Show your exit code to store staff.")
                             .font(TypeScale.caption).foregroundColor(Theme.bad).multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true).padding(.top, Space.xs)
                     }
@@ -70,7 +70,7 @@ struct ReceiptScreen: View {
                 .accessibilityLabel((due ? "Payment due, \(money(r.totalCents)), at \(r.storeName)."
                                          : "Paid \(money(r.totalCents)) as you left \(r.storeName).")
                                     + " \(when(r.paidAt))." + (r.isPaid && !r.payment.isEmpty ? " \(spoken(r.payment))." : "")
-                                    + (due ? " No card on file, so nothing was charged. Show the exit pass to staff to pay." : ""))
+                                    + (due ? " No card was on file, so nothing was charged. Show your exit code to store staff." : ""))
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityFocused($summaryFocused)
                 .opacity(stage >= 1 ? 1 : 0)
@@ -102,7 +102,7 @@ struct ReceiptScreen: View {
                 VStack(spacing: Space.s) {
                     Button("Done", action: onDone).buttonStyle(PillStyle())
                     if live || due {
-                        Text(due ? "You'll find this pass under Last trip." : "Thanks for shopping at \(r.storeName). Your bag is ready for next time.")
+                        Text(due ? "Keep this code handy on your way out. It stays under Last trip." : "Thanks for shopping at \(r.storeName). Your bag is ready for next time.")
                             .font(TypeScale.caption).foregroundColor(Theme.muted).multilineTextAlignment(.center)
                     }
                 }
@@ -122,7 +122,7 @@ struct ReceiptScreen: View {
 
     private func pass(_ r: Receipt) -> some View {
         VStack(spacing: 0) {
-            Text("Exit pass").font(TypeScale.caption).foregroundColor(Theme.muted)
+            Text("Exit code").font(TypeScale.caption).foregroundColor(Theme.muted)
             Group {
                 if let qr { Image(uiImage: qr).interpolation(.none).resizable().scaledToFit() } else { Color.white }
             }
@@ -130,10 +130,10 @@ struct ReceiptScreen: View {
             .padding(Space.m)
             .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.white))
             .padding(.top, Space.l)
-            .accessibilityLabel("Exit pass QR code")
+            .accessibilityLabel("Exit code as a QR code")
             Text(r.code).font(TypeScale.bodyMono).tracking(4).foregroundColor(Theme.ink).padding(.top, Space.l)
                 .accessibilityLabel("Code \(r.code.map(String.init).joined(separator: " "))")
-            Text(r.isPaid ? "Show this if staff ask to check your bag." : "Show this to staff to pay.")
+            Text("Show this if staff ask to check your bag.")
                 .font(TypeScale.caption).foregroundColor(Theme.muted).multilineTextAlignment(.center).padding(.top, Space.xs)
         }
         .padding(Space.xl)

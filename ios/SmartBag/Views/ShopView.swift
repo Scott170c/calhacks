@@ -60,7 +60,7 @@ struct ShopView: View {
                 if line.sold { Haptics.itemAdded() } else { Haptics.notice(.warning) }
                 withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) { proxy.scrollTo(f.sku, anchor: .center) }
                 announce(line.sold ? "Added \(line.name), \(money(line.priceCents)). Total \(money(m.total))."
-                                   : "Unknown item. It isn't sold here and won't be charged.")
+                                   : "Unknown item. Not sold here, won't be charged.")
             }
         }
         .background(Theme.bg.ignoresSafeArea())
@@ -142,8 +142,8 @@ struct BagChip: View {
             if unpaired && !m.bag.isBusy { return ("Pair your bag", Theme.faint, false) }
             switch m.bag {
             case .connected: return ("Bag connected", Theme.good, false)
-            case .connecting: return ("Connecting", Theme.faint, true)
-            case .searching: return ("Looking for your bag", Theme.faint, true)
+            case .connecting: return ("Connecting…", Theme.faint, true)
+            case .searching: return ("Looking for your bag…", Theme.faint, true)
             case .problem: return ("Bag not connected", Theme.bad, false)
             case .off: return ("Bag not connected", Theme.faint, false)
             }
@@ -199,7 +199,7 @@ struct Hero: View {
                 Lead(message)
             case let .away(nearestName, nearestDistance):
                 Title("Not in a Bag It store")
-                Lead("Walk into one and your bag starts pricing on its own.")
+                Lead("Walk into one and your bag starts on its own.")
                 if let n = nearestName, let d = nearestDistance {
                     HStack(spacing: Space.s) {
                         Image(systemName: "location").font(TypeScale.caption).foregroundColor(Theme.faint).accessibilityHidden(true)
@@ -339,8 +339,7 @@ struct LineRow: View {
                     (Text("\(line.qty) × ").font(TypeScale.captionNum) + Text(money(line.priceCents)).font(TypeScale.captionMono))
                         .foregroundColor(Theme.muted)
                 } else {
-                    (Text("Unknown item  ").font(TypeScale.body).foregroundColor(missing ? Theme.faint : Theme.ink)
-                     + Text(line.sku).font(TypeScale.captionMono).foregroundColor(Theme.faint))
+                    Text("Unknown item").font(TypeScale.body).foregroundColor(missing ? Theme.faint : Theme.ink)
                         .lineLimit(2)
                     Text(missing ? "Not sold here · won't be charged" : "Priced when you're in a store")
                         .font(TypeScale.caption).foregroundColor(Theme.muted)
@@ -368,7 +367,7 @@ struct LineRow: View {
             return line.qty > 1 ? "\(line.name), \(line.qty) at \(money(line.priceCents)) each, \(money(line.lineCents))"
                                 : "\(line.name), \(money(line.lineCents))"
         }
-        return missing ? "Unknown item \(line.sku), not sold here, won't be charged" : "Unknown item \(line.sku), priced when you're in a store"
+        return missing ? "Unknown item, not sold here, won't be charged" : "Unknown item, priced when you're in a store"
     }
 
     /// Flashes already played, so a rebuilt list doesn't replay an old one.
@@ -395,7 +394,7 @@ private struct LastTrip: View {
                 HStack(spacing: Space.m) {
                     VStack(alignment: .leading, spacing: Space.xs) {
                         Text(receipt.storeName).font(TypeScale.body).foregroundColor(Theme.ink)
-                        Text(receipt.isPaid ? when(receipt.paidAt) : "Payment due · Show to staff")
+                        Text(receipt.isPaid ? when(receipt.paidAt) : "Payment due · Show your exit code")
                             .font(TypeScale.caption).foregroundColor(receipt.isPaid ? Theme.muted : Theme.bad)
                     }
                     Spacer()
@@ -407,7 +406,7 @@ private struct LastTrip: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityHint("Shows the receipt and exit pass.")
+            .accessibilityHint("Shows the receipt and exit code.")
             Hairline()
         }
     }
@@ -467,8 +466,7 @@ struct WalkOutDock: View {
         let cardNote: String? = (noCard && has && store != nil)
             ? (leaving ? "No card on file. You'll pay at the store." : "No card on file. If you leave now, you'll pay at the store.") : nil
         let syncNote: String? = m.syncError == nil ? nil
-            : (store != nil && has ? "Not synced yet. Bag It keeps trying. If you leave now, you'll be charged once it reconnects."
-                                   : "Not synced yet. Bag It keeps trying.")
+            : "Something didn't sync. Bag It keeps trying. If an item is still missing, take it out and drop it in again."
         let problem: String? = { if !unpaired, case let .problem(msg) = m.bag { return msg } else { return nil } }()
         let opensSettings = problem?.contains("Settings") == true
         let spokenLabel: String = {
