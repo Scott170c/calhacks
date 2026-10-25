@@ -8,7 +8,12 @@ const MAPS_KEY = 'AIzaSyC6dseIbredlFfc0oM6ayDR6JLH3WSbqd4';
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 const NUS = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const NUS_RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
-const NUS_TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+const NUS_TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';   // legacy ESP32 bag (retired; kept for history)
+// SmartCart (Jetson Orin Nano) GATT, contract docs/SMARTCART-BLE.md = app/hardware-protocol/spec
+const CART_SVC = '7ccd0001-d416-4afc-a97d-f7c98e1afca9';
+const CART_CONTROL = '7ccd0002-d416-4afc-a97d-f7c98e1afca9';
+const CART_EVENTS = '7ccd0003-d416-4afc-a97d-f7c98e1afca9';
+const CART_STATUS = '7ccd0004-d416-4afc-a97d-f7c98e1afca9';
 const STORE_TABLES = ['store', 'myStores', 'myAccount', 'myTeam', 'myStoreActivity', 'myInvites'];
 const ROW_TABLES = ['product', 'shopper', 'cartItem', 'shopOrder', 'orderLine', 'bagEvent', 'myStorePeople'];
 // Global: the store list plus the caller's own account, teams and activity (views scoped to the caller).
@@ -219,7 +224,7 @@ function UserDiv() {
   const rootRef = React.useRef(null);
   const width = useWidth(rootRef);
   const stdbAddr = relPathAddress('spacetime');
-  const fwAddr = relPathAddress('firmware');
+  const hwAddr = relPathAddress('hardware-protocol');
   const androidAddr = relPathAddress('android');
   const iosAddr = relPathAddress('ios');
   // Who is connecting: a signed-in person (SpacetimeAuth id_token), else the page owner's console
@@ -246,7 +251,7 @@ function UserDiv() {
   const [operator, setOperator] = React.useState(null);
   const [tick, setTick] = React.useState(0);
   const [storeTick, setStoreTick] = React.useState(0);
-  const [firmware, setFirmware] = React.useState('');
+  const [contract, setContract] = React.useState({ spec: '', version: '' });
   const [android, setAndroid] = React.useState(null);
   const [ios, setIos] = React.useState(null);
   const [apkUrl, setApkUrl] = React.useState(null);
@@ -317,7 +322,8 @@ function UserDiv() {
   React.useEffect(() => {
     if (!stdbAddr) return;
     const offs = [
-      FS.onValue(FS.ref(FS.db, fwAddr + '/code'), (s) => setFirmware(s.val() || '')),
+      FS.onValue(FS.ref(FS.db, hwAddr + '/spec'), (s) => setContract((p) => ({ ...p, spec: s.val() || '' }))),
+      FS.onValue(FS.ref(FS.db, hwAddr + '/version'), (s) => setContract((p) => ({ ...p, version: s.val() || '' }))),
       FS.onValue(FS.ref(FS.db, androidAddr), (s) => setAndroid(s.val())),
       FS.onValue(FS.ref(FS.db, iosAddr), (s) => setIos(s.val())),
       FS.onValue(FS.ref(FS.db, stdbAddr + '/auth'), (s) => { setAuthCfg(s.val()); setAuthLoaded(true); }, () => setAuthLoaded(true)),
@@ -1458,17 +1464,29 @@ function UserDiv() {
     );
   };
 
-  // ---- Setup: the customer app and the bag hardware
+  // ---- Setup: the customer app and the cart hardware (Jetson SmartCart BLE)
   const SetupView = () => {
-    const proto = [['1005  or  +1005', 'add one'], ['-1005', 'remove one'], ['+1005@E28011', 'add; repeat reads of that tag are ignored'], ['{"op":"add","sku":"1005"}', 'JSON works too']];
+    const proto = [
+      ['START|s1|bayside-grocer', 'phone → cart: start or resume the visit’s session'],
+      ['17|A|apple|93', 'cart → phone: an apple went in (event 17, 93% sure)'],
+      ['18|R|apple|89', 'cart → phone: an apple came out'],
+      ['ACK|s1|17', 'phone → cart: the database has handled event 17'],
+      ['S|s1|ACTIVE|18|0|SmartCart-3F2A', 'cart status: session, state, last event, unacknowledged, name'],
+      ['STOP|s1', 'phone → cart: the shopper walked out'],
+    ];
+    const jetsonCmds = [
+      ['Check the Bluetooth adapter', 'bash hardware/smartcart_ble/tools/check_adapter.sh'],
+      ['Test without the camera (sends a demo apple)', 'sudo python3 -m hardware.smartcart_ble.tools.fake_cart --demo'],
+      ['Run the scanner with Bluetooth', 'sudo python3 -m hardware.main_tensorrt --transport ble+console'],
+    ];
     return (
       <div>
         {Section('Customer app', null, (
           <div className={box + ' p-5'}>
             <div className="flex flex-wrap items-start gap-6">
               <div className="flex-1 min-w-0" style={{ minWidth: 230 }}>
-                <div className="text-base font-semibold tracking-tight ink">SmartBag for Android {android ? android.version : ''}</div>
-                <div className="mt-1 text-sm muted">One WebSocket to the database. The app forwards bag readings and GPS fixes; the database places the phone in a store, prices the bag and charges it the moment the shopper walks out. There is no pay button.</div>
+                <div className="text-base font-semibold tracking-tight ink">Bag It for Android {android ? android.version : ''}</div>
+                <div className="mt-1 text-sm muted">One WebSocket to the database. The app forwards the cart’s item events and GPS fixes; the database places the phone in a store, prices the bag and charges it the moment the shopper walks out. There is no pay button.</div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <a href={apkUrl || undefined} download="SmartBag.apk" aria-disabled={!apkUrl} className={'btn btn-primary' + (apkUrl ? '' : ' pointer-events-none')}>Download APK</a>
                   {srcUrl && <a href={srcUrl} download="SmartBag-source.zip" className="btn">Android source</a>}
@@ -1477,7 +1495,8 @@ function UserDiv() {
                 <ol className="mt-4 space-y-1.5 text-sm muted" style={{ paddingLeft: 18, listStyle: 'decimal' }}>
                   <li>Scan the code with the phone, or open this page on it and tap Download APK.</li>
                   <li>Open the file and allow installs from this source when Android asks.</li>
-                  <li>Launch SmartBag, tap Get started, and allow Bluetooth and Location.</li>
+                  <li>Open Bag It, create an account, and allow Nearby devices and Location.</li>
+                  <li>With the cart switched on nearby, pair it when it shows up as Cart XXXX.</li>
                 </ol>
                 {ios && <div className="mt-3 text-xs faint">iPhone {ios.version}: build from source in Xcode ({ios.minIOS ? 'iOS ' + ios.minIOS + '+' : 'iOS 16+'}). Not yet tested on a device.</div>}
                 <div className="mt-3 text-xs faint">Demo without hardware: long-press the bag status to drop in a random item; long-press the store name to simulate walking out.</div>
@@ -1490,14 +1509,14 @@ function UserDiv() {
             </div>
           </div>
         ), true)}
-        {Section('Bag hardware', 'BLE Nordic UART Service', (
+        {Section('Cart hardware', 'SmartCart over Bluetooth', (
           <div className={box + ' overflow-hidden'}>
-            <div className="px-4 pt-4 text-sm muted">The bag notifies newline-terminated text on TX. The phone forwards each line to the database, which parses it and answers the bag on RX with <span className="mono ink whitespace-nowrap">OK +1005 4.69</span>, <span className="mono ink whitespace-nowrap">ERR 9999 unknown</span>, or <span className="mono ink whitespace-nowrap">PAID 7KQ2XD</span> once the shopper walks out and is charged (<span className="mono ink whitespace-nowrap">DUE 7KQ2XD</span> when no card was on file, so nothing was charged).</div>
+            <div className="px-4 pt-4 text-sm muted">The cart is a Jetson Orin Nano with a camera and its own Bluetooth. When an item crosses into or out of the bag, the cart notifies the shopper’s phone; the phone sends each event to the database, which prices it at this store and keeps the bag. The cart never knows prices, stores or payments, and the walk-out is decided by the phone’s location. Camera labels apple, banana, orange, bottle, carrot and broccoli map to this store’s products; anything else shows as not sold here and isn’t charged.</div>
             <div className="mt-3 text-xs">
               {proto.map(([a, b]) => (
-                <div key={a} className="px-4 py-2 flex items-baseline gap-3 border-t hl"><span className="mono shrink-0 ink">{a}</span><span className="ml-auto text-right muted">{b}</span></div>
+                <div key={a} className="px-4 py-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-t hl"><span className="mono shrink-0 ink">{a}</span><span className="ml-auto text-right muted">{b}</span></div>
               ))}
-              {[['Service', NUS], ['TX, notify', NUS_TX], ['RX, write', NUS_RX]].map(([a, b]) => (
+              {[['Service', CART_SVC], ['CONTROL, write', CART_CONTROL], ['EVENTS, notify', CART_EVENTS], ['STATUS, read + notify', CART_STATUS]].map(([a, b]) => (
                 <div key={a} className="px-4 py-2 flex items-center gap-3 border-t hl">
                   <span className="shrink-0 muted">{a}</span>
                   <span className="mono ml-auto truncate ink">{b}</span>
@@ -1505,11 +1524,19 @@ function UserDiv() {
                 </div>
               ))}
             </div>
-            <div className="px-4 pt-4 pb-2 flex items-center gap-3 border-t hl">
-              <div className="min-w-0 flex-1"><div className="text-sm font-medium ink">ESP32 firmware</div><div className="text-xs muted">Arduino sketch, advertises as SmartBag-01</div></div>
-              <button className="btn btn-sm" onClick={() => copy('fw', firmware)} disabled={!firmware}>{copied === 'fw' ? 'Copied' : copied === 'failed:fw' ? 'Copy failed' : 'Copy sketch'}</button>
+            <div className="px-4 pt-4 pb-1 border-t hl text-sm font-medium ink">On the Jetson</div>
+            <div className="text-xs">
+              {jetsonCmds.map(([a, b]) => (
+                <div key={a} className="px-4 py-2 flex items-center gap-3">
+                  <div className="min-w-0 flex-1"><div className="muted">{a}</div><div className="mono ink truncate">{b}</div></div>
+                  <button onClick={() => copy(a, b)} className="btn btn-sm shrink-0" aria-label={'Copy command: ' + a}>{copied === a ? 'Copied' : copied === 'failed:' + a ? 'Copy failed' : 'Copy'}</button>
+                </div>
+              ))}
             </div>
-            <pre className="mx-4 mb-4 mt-1 p-3 rounded-xl overflow-auto sunken muted mono" style={{ fontSize: 11, maxHeight: 320, lineHeight: 1.55 }}>{firmware || 'Loading…'}</pre>
+            <div className="px-4 py-3 mt-1 flex items-center gap-3 border-t hl">
+              <div className="min-w-0 flex-1"><div className="text-sm font-medium ink">Bluetooth contract{contract.version ? ' v' + contract.version : ''}</div><div className="text-xs muted">Messages, sessions, reconnects and the database calls, shared by the cart, the app and the database</div></div>
+              <button className="btn btn-sm shrink-0" onClick={() => copy('contract', contract.spec)} disabled={!contract.spec}>{copied === 'contract' ? 'Copied' : copied === 'failed:contract' ? 'Copy failed' : 'Copy contract'}</button>
+            </div>
           </div>
         ))}
       </div>
